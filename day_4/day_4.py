@@ -1,6 +1,6 @@
-
 """
     Day #04. Is passport valid?
+    Author: Sumenko Vladimir
     https://adventofcode.com/2020/day/4
     part 01: 245
     part 02: 133
@@ -42,7 +42,7 @@ def is_pid_correct(pid):
 def is_hgt_correct(hgt):
     """(Height) a number followed by either cm or in and in interval"""
     interval = {"cm": (150, 193), "in": (59, 76)}
-    height = hgt.split("cm")[0].split("in")[0] # too lo-o-o-ong
+    height = hgt.split("cm")[0].split("in")[0]  # too lo-o-o-ong
     units = hgt[len(height):]
     try:
         if interval[units][0] <= int(height) <= interval[units][1]:
@@ -77,21 +77,8 @@ def is_valid_data(line, fields):
     return True
 
 
-def read_fields(fname="fields.txt"):
-    """ read fields to check """
-    fields = ()
+def check_batch(fname, is_valid_func, fields, batch_name=""):
     with open(fname, "r") as inp:
-        for line in inp.readlines():
-            fields += (line.strip().split("(")[0].strip(),)
-    return fields
-
-# def check_batch(fname, is_valid_func):
-
-
-if __name__ == "__main__":
-    fields = read_fields("fields_enough.txt")
-
-    with open("input.txt", "r") as inp:
         valid = 0
         wait_new_line = False
         docs_collected = 0
@@ -100,23 +87,33 @@ if __name__ == "__main__":
         for line in inp.readlines():
             line = line.split("\n")[0]
 
-            if line == "":
+            if line == "":  # empty line, document is done
                 doc = {}
                 wait_new_line = False
                 docs_collected += 1
                 continue
-            if wait_new_line:
+            if wait_new_line:  # if last doc is valid
                 continue
 
+            # collect data
             doc.update(
                 {k: v for k, v in (kv.split(":") for kv in line.split(" "))}
                 )
-
-            if is_valid_data(doc, fields) is True:
+            # increment if only is valid, then just wait for new line or EOF
+            if is_valid_func(doc, fields) is True:
                 valid += 1
                 wait_new_line = True
 
-        if line is not "":
+        # last line was not empty
+        if line != "":
             docs_collected += 1
 
-        print(f"Valid/Total: {valid}/{docs_collected}")
+        print(f"{batch_name}: {valid}/{docs_collected}")
+
+
+if __name__ == "__main__":
+    fields = ('byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid')
+
+    fname = "input.txt"
+    check_batch(fname, is_valid_data, fields, "soft check")
+    check_batch(fname, is_valid, fields, "hard check")
